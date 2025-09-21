@@ -25,7 +25,7 @@ Xavier
 
 SELECT nomSalarie, prenomSalarie
 FROM Salaries
-WHERE salaireSalarie > ALL (
+WHERE salaireSalarie >= ALL (
     SELECT salaireSalarie
     FROM Salaries
 );
@@ -69,9 +69,10 @@ SELECT nomProjet
 FROM Projets p
 NATURAL JOIN EtreAffecte
 GROUP BY codeProjet, nomProjet
-HAVING COUNT(codeProjet) > ALL (
-    SELECT COUNT(*)
-    FROM Salaries
+HAVING COUNT(*) = (
+    SELECT MAX(COUNT(codeProjet))
+    FROM ETREAFFECTE
+    GROUP BY codeProjet
 );
 
 /*
@@ -91,18 +92,18 @@ Laurent
  */
 WITH cteProjetTroisSalaries AS (
     SELECT codeProjet
-    FROM ETREAFFECTE
+    FROM EtreAffecte
     GROUP BY codeProjet
     HAVING COUNT(numSalarie) > 3
 )
 SELECT nomSalarie, prenomSalarie
 FROM Salaries s
-NATURAL JOIN EtreAffecte
 WHERE NOT EXISTS(
     SELECT *
-    FROM cteProjetTroisSalaries cte
-    WHERE cte.codeProjet = EtreAffecte.codeProjet
-)
+    FROM EtreAffecte ea
+    NATURAL JOIN cteProjetTroisSalaries
+    WHERE s.numSalarie = ea.numSalarie
+);
 
 /*
  R5 :
@@ -426,3 +427,7 @@ Site Web EDF
 Site Web Renault
 300000
  */
+
+SELECT nomsalarie -- recupere le nom des salairies
+FROM salaries -- depuis la table salaries
+WHERE prenomsalarie='Xavier'; -- qui ont pour prenom Xavier
