@@ -120,7 +120,9 @@ Ouzy Jacques 0 0 0
  */
 
 SELECT NOMETUDIANT, COALESCE(PRENOMETUDIANT,'prénom inconnu') AS PRENOMETUDIANT,
-       COUNT(IDORAL) AS NBORAUX, COUNT(COALESCE(note,0)) AS NBNOTES, COUNT(COALESCE(CODEUV,'code uv inconnu')) AS NBUV
+       COUNT(IDORAL) AS NBORAUX,
+       COUNT(COALESCE(note,0)) AS NBNOTES,
+       COUNT(COALESCE(CODEUV,'code uv inconnu')) AS NBUV
 FROM ETUDIANTS
 NATURAL JOIN ORAUX
 GROUP BY NOMETUDIANT, PRENOMETUDIANT;
@@ -155,8 +157,7 @@ Zétofrais Pas de note
  */
 
 SELECT NOMETUDIANT, COALESCE(PRENOMETUDIANT,'prénom inconnu') AS PRENOMETUDIANT
-FROM ETUDIANTS
-;
+FROM ETUDIANTS;
 
 /*
  R9 : le nom et le prénom des étudiants qui ont eu une note dans toutes les UV.
@@ -167,33 +168,38 @@ Terieur Alain
  */
 
 SELECT NOMETUDIANT, COALESCE(PRENOMETUDIANT,'prénom inconnu') AS PRENOMETUDIANT
-FROM ETUDIANTS;
+FROM ETUDIANTS e
+WHERE NOT EXISTS(
+    SELECT *
+    FROM UV u
+    WHERE NOT EXISTS(
+        SELECT *
+        FROM ORAUX o
+        WHERE e.NUMETUDIANT = o.NUMETUDIANT
+        AND u.CODEUV = o.CODEUV
+        AND NOTE IS NOT NULL
+    )
+);
+
 
 /*
- pour chaque note, indiquer le numéro de l’étudiant qui a obtenu la note, le code de
+R10 : pour chaque note, indiquer le numéro de l’étudiant qui a obtenu la note, le code de
 l’UV concernée par la note, la moyenne générale de l’étudiant, la moyenne générale de
 l’UV de la note, le rang de la note, et le rang de l’étudiant (par rapport à sa moyenne).
 NOTE RANGNOTE CODEUV MOYENNEUV NUMETUDIANT MOYENNEETUDIANT RANGETUDIANT
 ----- --------- ------- ---------- ------------ ---------------- -------------
-13 5 01 8,86 E2 13 1
-8 13 01 8,86 E4 11,25 2
-8 13 01 8,86 E4 11,25 2
-15 2 03 12,67 E4 11,25 2
-14 3 03 12,67 E4 11,25 2
-10 8 04 11,67 E1 11,2 3
-12 6 9 E1 11,2 3
-14 3 01 8,86 E1 11,2 3
-11 7 02 10 E1 11,2 3
-9 10 03 12,67 E1 11,2 3
-9 10 02 10 E5 10,25 4
-9 10 01 8,86 E5 10,25 4
-6 16 9 E5 10,25 4
-17 1 04 11,67 E5 10,25 4
-6 16 01 8,86 E3 7 5
-8 13 04 11,67 E3 7 5
-4 18 01 8,86 E3 7 5
-10 8 02 10 E3 7 5
- */
+*/
+
+SELECT
+    NOTE,
+    RANK() OVER ( ORDER BY NOTE ) AS RANGNOTE,
+    u.CODEUV,
+    AVG(NOTE) AS MOYENNEUV,
+    NUMETUDIANT
+FROM ORAUX o
+JOIN UV u ON o.CODEUV = o.CODEUV
+WHERE NOTE IS NOT NULL
+GROUP BY NOTE, u.CODEUV, NUMETUDIANT;
 
 /*
  Série 2 :
@@ -202,10 +208,14 @@ NOMETUDIANT PRENOMETUDIANT
 ------------ ---------------
 Némard Jean
 Terieur Alain
- */
+*/
 
 SELECT NOMETUDIANT, COALESCE(PRENOMETUDIANT,'prénom inconnu') AS PRENOMETUDIANT
-FROM ETUDIANTS;
+FROM ETUDIANTS
+WHERE DATEETUDIANT > ALL (
+    SELECT DATEPROF
+    FROM PROFS
+);
 
 /*
  R12 : afficher les 3 meilleurs notes de la table Oraux. Pour chaque note indiquer la valeur de
@@ -216,7 +226,10 @@ NOTE NUMETUDIANT
 15 E4
 14 E1
 14 E4
- */
+*/
+
+SELECT RANK() OVER (ORDER BY COALESCE(NOTE,0) DESC) AS NOTE, NUMETUDIANT
+FROM ORAUX;
 
 /*
 R13 : pour chaque prof, le nom et le prénom du prof ainsi que la moyenne des notes des
@@ -229,8 +242,11 @@ Gasquet Malo 11,67
 Mugnier Marie-Laure 10
 Palleja Xavier 8,86
 Palleja Nathalie
-Bellahsene Zohra
- */
+Bellahsene ZohraGesquet
+*/
+
+SELECT NOMPROF, COALESCE(PRENOMPROF, 'prof inconnu') AS prenomProf
+FROM PROFS;
 
 /*
  R14 : le résultat de chaque étudiant. Comme pour la requête 8, mais cette fois on veut prendre en
@@ -273,7 +289,7 @@ Némard Jean 2
 Zeblouse Agathe 0
 Terieur Alex 0
 Ouzy Jacques 0
- */
+*/
 
 SELECT NOMETUDIANT, COALESCE(PRENOMETUDIANT,'prénom inconnu') AS PRENOMETUDIANT
 FROM ETUDIANTS;
@@ -292,6 +308,8 @@ E7 Ouzy Jacques GESTION
 E7 Ouzy Jacques IHM
 E7 Ouzy Jacques PROG
  */
+
+
 
 /*
  R18 : pour chaque classe, indiquer le nom et le prénom de l’étudiant qui a le plus de notes
