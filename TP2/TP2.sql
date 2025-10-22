@@ -44,6 +44,13 @@ FROM A a;
 NIVEAU NOMSALARIE PRENOMSALARIE
 */
 
+SELECT nomSalarie, prenomSalarie
+FROM Salaries
+START WITH  NOMSALARIE='Zétofrais' AND PRENOMSALARIE='Mélanie'
+CONNECT BY PRIOR NUMSALARIE = NUMSALARIECHEF;
+
+-- OU ALORS
+
 WITH A (numSalarie, nomSalarie, prenomSalarie, numSalarieChef, niveau)
     AS (
         SELECT numSalarie, nomSalarie, prenomSalarie, numSalarieChef, 1

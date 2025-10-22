@@ -43,13 +43,26 @@ P6
 Site Web EDF
 */
 
-SELECT codeProjet, nomProjet
-FROM Projets
-WHERE typeProjet='Cascade'
-AND budgetProjet > ANY (
-    SELECT budgetProjet
-    FROM Projets
-    WHERE typeProjet='Agile'
+-- quantificateur
+SELECT CODEPROJET, NOMPROJET
+FROM PROJETS p
+WHERE TYPEPROJET='Cascade'
+AND BUDGETPROJET > ANY (
+    SELECT BUDGETPROJET
+    FROM PROJETS
+    WHERE TYPEPROJET='Agile'
+    );
+
+-- fonction
+SELECT CODEPROJET, NOMPROJET
+FROM PROJETS p
+WHERE TYPEPROJET='Cascade'
+AND NOT EXISTS(
+    SELECT p2.CODEPROJET
+    FROM PROJETS p2
+    WHERE p2.TYPEPROJET != 'Agile'
+    AND p.CODEPROJET = p2.CODEPROJET
+    AND p2.BUDGETPROJET = (SELECT MIN(BUDGETPROJET) FROM PROJETS)
 );
 
 /*
@@ -114,19 +127,18 @@ POURCENTAGE
 40
  */
 
-WITH cteTotalSalarieRiches AS (
-    SELECT numSalarie
-    FROM Salaries
-    WHERE salaireSalarie > 3500
-)SELECT COUNT
-    (SELECT numSalarie
-    FROM Salaries
-    WHERE salaireSalarie > 3500)
-    /
-    (SELECT COUNT(codeSalarie)
-    FROM Salaries
-    WHERE salaireSalarie > 3500)
-    AS pourcentage;
+WITH salaries_riches AS(
+    SELECT COUNT(NUMSALARIE) AS NB_SALARIES
+    FROM SALARIES s
+    WHERE SALAIRESALARIE > 3500
+),
+pourcentage_salaries_riches AS (
+    SELECT AVG(NB_SALARIES) AS POURCENTAGE
+    FROM salaries_riches
+)
+SELECT POURCENTAGE
+FROM pourcentage_salaries_riches;
+
 /*
  R6 :
 le nom et le prénom des salariés qui connaissent toutes les technologies.
