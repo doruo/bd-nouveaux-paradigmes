@@ -1,6 +1,8 @@
 *.xml
-/.idea
+*.iml
+
+/.idea/*
 .idea
-.idea/
+.idea/*
 .vscode
 .vscode/
