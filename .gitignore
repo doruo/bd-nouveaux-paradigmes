@@ -1,8 +1,10 @@
 *.xml
 *.iml
 
+# IDE
 /.idea/*
 .idea
+.idea/
 .idea/*
 .vscode
 .vscode/
