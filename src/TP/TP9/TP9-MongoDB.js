@@ -1,6 +1,8 @@
+// TP9 - MongoDB
+
+// The current database to use.
 use("hayem");
 
-// TP9 - MongoDB
 // Partie 1
 
 // R1 : Le nombre de commandes.
