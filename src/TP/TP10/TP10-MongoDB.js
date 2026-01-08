@@ -1,7 +1,9 @@
+// TP10 - MongoDB
+
+// The current database to use.
+use("hayem");
 
 // Partie 1
-
-
 
 // Partie 2
 
@@ -9,7 +11,15 @@
 
 // R30 : Le nombre de commandes.
 
+db.commandes.aggregate([
+    {$count: "nbCommandes"}
+]);
+
 // R31 : Les commandes de type ‘Interne’.
+
+db.commandes.aggregate([
+    {$project: {"type": "Interne"}}
+]);
 
 // R32 : Le nombre de commandes de type ‘Interne’ payées en ‘Nature’. 
 
