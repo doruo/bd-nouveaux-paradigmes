@@ -1,4 +1,4 @@
-use hayem;
+use("hayem");
 
 db.magasins.drop();
 db.commandes.drop();
